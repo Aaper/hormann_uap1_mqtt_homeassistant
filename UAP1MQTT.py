@@ -1,5 +1,6 @@
 import paho.mqtt.client as mqtt
-import sys, time, os, urlparse
+import sys, time, os
+from urllib.parse import urlparse
 from UAP1Actions import UAP1Actions
 from UAP1States import UAP1States
 
@@ -12,13 +13,13 @@ username = os.environ.get('MQTT_USERNAME', None)
 password = os.environ.get('MQTT_PASSWORD', None)
 clientid = os.environ.get('MQTT_CLIENT_ID', None)
 
-topic_status_light = 'state/{}/light'.format(clientid)
-topic_status_door = 'state/{}/door'.format(clientid)
+topic_status_light = 'home-assistant/light/{}/state'.format(clientid)
+topic_status_door = 'home-assistant/cover/{}/state'.format(clientid)
 
-topic_command_light = 'command/{}/light'.format(clientid)
-topic_command_door = 'command/{}/door'.format(clientid)
+topic_command_light = 'home-assistant/light/{}/set'.format(clientid)
+topic_command_door = 'home-assistant/cover/{}/set'.format(clientid)
 
-server_parsed = urlparse.urlparse(server_uri)
+server_parsed = urlparse(server_uri)
 
 mqttc = mqtt.Client(client_id=clientid)
 if username and password :
@@ -37,7 +38,7 @@ def on_message(client, obj, msg):
     #                                          msg.payload, msg.retain))
     fmt_date = time.strftime("%Y-%m-%d %H:%M")
     if not msg.retain:
-        rcv = msg.payload.lower()
+        rcv = msg.payload.decode("UTF-8").lower()
         force_update = True
         if msg.topic == topic_command_light:
             if ustates.get_str_light().lower() != rcv:

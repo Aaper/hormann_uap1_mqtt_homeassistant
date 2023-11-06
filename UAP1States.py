@@ -10,12 +10,13 @@ GPIO_MODE = GPIO.BOARD # GPIO.BCM
 
 DOOR_MAX_MOVING_TIME = 30
 
-STATE_UNKNOWN, STATE_CLOSED, STATE_OPEN, STATE_SLIGHTLY_OPEN, STATE_MOVING = range(5)
+STATE_UNKNOWN, STATE_CLOSED, STATE_OPEN, STATE_SLIGHTLY_OPEN, STATE_OPENING, STATE_CLOSING = range(6)
 DOOR_STATE_TO_STR = { STATE_UNKNOWN: 'Unknown',
-              STATE_CLOSED: 'Closed',
-              STATE_OPEN: 'Open',
-              STATE_SLIGHTLY_OPEN: 'Slightly',
-              STATE_MOVING: 'Moving'}
+              STATE_CLOSED: 'closed',
+              STATE_OPEN: 'open',
+              STATE_SLIGHTLY_OPEN: 'slightly',
+              STATE_OPENING: 'opening',
+              STATE_CLOSING: 'closing'}
 OFF = False
 ON = True
 LIGHT_STATE_TO_STR = { ON: 'ON', OFF: 'OFF', None: 'Unknown' }
@@ -57,13 +58,16 @@ class UAP1States:
 
             self.light_state = light
 
-            if not down and not up and self.door_state != STATE_SLIGHTLY_OPEN :
-                if self.door_state == STATE_MOVING:
-                    if time.time() - self.last_door_move > DOOR_MAX_MOVING_TIME :
+            if not down and not up and self.door_state != STATE_SLIGHTLY_OPEN:
+                if self.door_state == STATE_CLOSING or self.door_state == STATE_OPENING:
+                    if time.time() - self.last_door_move > DOOR_MAX_MOVING_TIME:
                         self.door_state = STATE_SLIGHTLY_OPEN
                 else:
                     self.last_door_move = time.time()
-                    self.door_state = STATE_MOVING
+                    if self.door_state == STATE_OPEN:
+                        self.door_state = STATE_CLOSING
+                    else:
+                        self.door_state = STATE_OPENING
 
             if down:
                 self.door_state = STATE_CLOSED
