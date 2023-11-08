@@ -1,7 +1,6 @@
-import threading
 import time
 
-import RPi.GPIO as GPIO #WirePI
+import RPi.GPIO as GPIO
 
 GPIO.setwarnings(False)
 
@@ -47,9 +46,9 @@ class UAP1Actions:
     def light(self):
         self.trigger(self.GPIO_light)
 
+
 # Tests
 if __name__ == '__main__':
-
     a = UAP1Actions(29, 31, 33, 35)
     a.light()
     time.sleep(5)
@@ -58,4 +57,3 @@ if __name__ == '__main__':
     a.close()
     time.sleep(5)
     a.light()
-    

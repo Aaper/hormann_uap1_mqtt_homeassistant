@@ -9,11 +9,7 @@ Requirements:
 
 Dependencies:
 ```
-sudo apt-get install python-pip
-sudo python -m pip install --upgrade pip setuptools wheel
-sudo pip install paho-mqtt
-git clone git://git.drogon.net/wiringPi
-cd wiringPi && cat INSTALL
+sudo apt install python3-pip python3-setuptools python3-wheel python3-paho-mqtt python3-RPi.GPIO
 ```
 
 ## Reading Outputs
@@ -39,13 +35,13 @@ Launch alone UAP1Actions.py to switch on the light, then slightly open the door.
 UAP1MQTT.py takes care of communicate the state of the door and of the
 light of the motor via resp. MQTT topics:
 
- - `state/${MQTT_CLIENTID}/door`
- - `state/${MQTT_CLIENTID}/light`
+ - `home-assistant/cover/${MQTT_CLIENTID}/state`
+ - `home-assistant/light/${MQTT_CLIENTID}/state`
 
 Plus, it executes commands received on:
 
- - `command/${MQTT_CLIENTID}/door` allows messages: CLOSE, OPEN, SLIGHT
- - `command/${MQTT_CLIENTID}/light` allows messages : ON, OFF
+ - `home-assistant/cover/${MQTT_CLIENTID}/set` allows messages: CLOSE, OPEN, SLIGHT, STOP
+ - `home-assistant/light/${MQTT_CLIENTID}/set` allows messages : ON, OFF
 
 Following parameters can be set via global environment variables :
 
@@ -72,13 +68,4 @@ systemctl start uap1
 systemctl status uap1
 ```
 
-This piece of software will be launch at the boot time now.
-
-## Openhab integration
-
-Copy/modify files under the folder "openhab" inside your openhab installation. You will need the MQTT Openhab MQTT 1.x module and the translation module.
-
-### Openhab icons
-
-Copy folder "icons/classic" into "/etc/openhab2/icons/classic"
- 
+This piece of software will be launch at the boot time now. 

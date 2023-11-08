@@ -1,7 +1,7 @@
 import threading
 import time
 
-import RPi.GPIO as GPIO #WirePI
+import RPi.GPIO as GPIO
 
 GPIO.setwarnings(False)
 
@@ -11,15 +11,16 @@ GPIO_MODE = GPIO.BOARD # GPIO.BCM
 DOOR_MAX_MOVING_TIME = 30
 
 STATE_UNKNOWN, STATE_CLOSED, STATE_OPEN, STATE_SLIGHTLY_OPEN, STATE_OPENING, STATE_CLOSING = range(6)
-DOOR_STATE_TO_STR = { STATE_UNKNOWN: 'Unknown',
-              STATE_CLOSED: 'closed',
-              STATE_OPEN: 'open',
-              STATE_SLIGHTLY_OPEN: 'slightly',
-              STATE_OPENING: 'opening',
-              STATE_CLOSING: 'closing'}
+DOOR_STATE_TO_STR = {STATE_UNKNOWN: 'Unknown',
+                     STATE_CLOSED: 'closed',
+                     STATE_OPEN: 'open',
+                     STATE_SLIGHTLY_OPEN: 'slightly',
+                     STATE_OPENING: 'opening',
+                     STATE_CLOSING: 'closing'}
 OFF = False
 ON = True
-LIGHT_STATE_TO_STR = { ON: 'ON', OFF: 'OFF', None: 'Unknown' }
+LIGHT_STATE_TO_STR = {ON: 'ON', OFF: 'OFF', None: 'Unknown'}
+
 
 class UAP1States:
     def __init__(self, GPIO_light, GPIO_down, GPIO_up):
@@ -76,7 +77,7 @@ class UAP1States:
                 self.door_state = STATE_OPEN
 
             # Check every 0.2s after new states
-            time.sleep(0.2) 
+            time.sleep(0.2)
 
     def get_door(self):
         return self.door_state
@@ -91,7 +92,7 @@ class UAP1States:
         return DOOR_STATE_TO_STR[self.door_state]
 
     def get_str_states(self):
-        return (self.get_str_light(), self.get_str_door())
+        return self.get_str_light(), self.get_str_door()
 
     def finish(self):
         self.execute = False
@@ -104,11 +105,10 @@ if __name__ == '__main__':
 
     a = UAP1States(36, 38, 40)
     sec = time.time()
-    
+
     # Monitor the states during 60 secondes
-    while time.time() - sec < 60 :
+    while time.time() - sec < 60:
         print(a.get_str_states())
         time.sleep(1)
-    
-    a.finish()
 
+    a.finish()

@@ -1,10 +1,12 @@
-import paho.mqtt.client as mqtt
-import sys, time, os
+import os
+import time
 from urllib.parse import urlparse
+import paho.mqtt.client as mqtt
+
 from UAP1Actions import UAP1Actions
 from UAP1States import UAP1States
 
-UPDATE_TIME = 5*60 # 5 min
+UPDATE_TIME = 5 * 60  # 5 min
 
 # Inspired from https://www.cloudmqtt.com/docs/python.html
 
@@ -22,23 +24,27 @@ topic_command_door = 'home-assistant/cover/{}/set'.format(clientid)
 server_parsed = urlparse(server_uri)
 
 mqttc = mqtt.Client(client_id=clientid)
-if username and password :
+if username and password:
     mqttc.username_pw_set(username, password=password)
 mqttc.connect(server_parsed.hostname, port=server_parsed.port, keepalive=60)
 
 ustates = UAP1States(36, 38, 40)
 uactions = UAP1Actions(29, 31, 33, 35)
 
+fmt_date = time.strftime("%Y-%m-%d %H:%M")
+
+
 def on_connect(client, userdata, flags, rc):
     pass
-    #print("rc: " + str(rc))
+    # print("rc: " + str(rc))
+
 
 def on_message(client, obj, msg):
-    #print("received message: {} -- {} -- retained {}".format(msg.topic,
+    # print("received message: {} -- {} -- retained {}".format(msg.topic,
     #                                          msg.payload, msg.retain))
-    fmt_date = time.strftime("%Y-%m-%d %H:%M")
     if not msg.retain:
         rcv = msg.payload.decode("UTF-8").lower()
+        global force_update
         force_update = True
         if msg.topic == topic_command_light:
             if ustates.get_str_light().lower() != rcv:
@@ -52,17 +58,26 @@ def on_message(client, obj, msg):
                     uactions.open()
                 if rcv == "slight":
                     uactions.slightly_open()
+                if rcv == "stop":
+                    if ustates.get_str_door().lower() == "closing":
+                        uactions.open()
+                    else:
+                        uactions.close()
+
 
 def on_publish(client, obj, mid):
     pass
-    #print("pulbish: {}, {} ".format(obj, mid))
+    # print("pulbish: {}, {} ".format(obj, mid))
+
 
 def on_subscribe(client, obj, mid, granted_qos):
     pass
-    #print("Subscribed: {}, {}, {}".format(mid, granted_qos, obj))
+    # print("Subscribed: {}, {}, {}".format(mid, granted_qos, obj))
+
 
 def on_log(client, obj, level, string):
     print(string)
+
 
 mqttc.on_message = on_message
 mqttc.on_connect = on_connect
@@ -70,7 +85,7 @@ mqttc.on_publish = on_publish
 mqttc.on_subscribe = on_subscribe
 
 # Uncomment to enable debug messages
-#mqttc.on_log = on_log
+# mqttc.on_log = on_log
 
 # Start subscribe
 mqttc.subscribe(topic_command_light, qos=0)
@@ -89,7 +104,6 @@ while rc == 0:
     door_state = ustates.get_door()
     light_state = ustates.get_light()
     curr_time = time.time()
-    fmt_date = time.strftime("%Y-%m-%d %H:%M")
     if last_door_state != door_state or curr_time - last_door_update > UPDATE_TIME or force_update:
         last_door_update = time.time()
         last_door_state = door_state
@@ -104,4 +118,3 @@ while rc == 0:
     rc = mqttc.loop()
     time.sleep(0.3)
 print("[{}] exited ! rc: {}".format(fmt_date, rc))
-
